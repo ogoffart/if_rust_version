@@ -111,3 +111,31 @@ fn item_expr() {
         foo_2()
     }}}, 11);
 }
+
+
+if_rust_version! { < 1.31 {
+    macro_rules! const_fn {
+        ($(#[$m:meta])* const fn $($rest:tt)*) => {
+            $(#[$m])* fn $($rest)*
+        };
+        ($(#[$m:meta])* pub const fn $($rest:tt)*) => {
+            $(#[$m])*
+            ///
+            /// This function is a const fn from rust 1.33
+            pub fn $($rest)*
+        };
+    }
+} else {
+    macro_rules! const_fn { ($fn:item) => { $fn } }
+}}
+
+const_fn!{
+    /// Function which is constant for some version of the compiler
+    #[inline]
+    pub const fn foo_const(x : u32) -> u32 { x + 2 }
+}
+
+#[test]
+fn test_const_fn() {
+    assert_eq!(foo_const(44), 46);
+}
