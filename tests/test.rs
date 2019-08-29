@@ -12,7 +12,7 @@ fn basic() {
     if_rust_version! { < 1.0 { let x = :error:; } else { let x = 24; }};
     assert_eq!(x, 24);
 
-    if_rust_version! { < 1.999 { let x = 44; } else { let x = $error$; }};
+    if_rust_version! { < 1.999 { let x = 44; } else { let x = ~error~; }};
     assert_eq!(x, 44);
 }
 
@@ -63,7 +63,7 @@ if_rust_version! { == 1.37 {
         assert!(if_rust_version!(> 1.37 { ~ error ~ } else if rust_version > 1.36 { true } else { ~error~ }));
         assert!(if_rust_version!(< 1.37 { ~ error ~ } else if rust_version < 1.38 { true } else { ~error~ }));
         assert!(if_rust_version!(< 1.34 { ~ error ~ } else if rust_version <= 1.37 { true } else { ~error~ }));
-        assert!(if_rust_version!(< 1.32 { ~ error ~ } else if rust_version <= 1.36 { error$ } else { true }));
+        assert!(if_rust_version!(< 1.32 { ~ error ~ } else if rust_version <= 1.36 { error~ } else { true }));
         assert!(if_rust_version!(!= 1.34 { true }));
         assert!(if_rust_version!(!= 1.36 { true }));
         assert!(if_rust_version!(!= 1.38 { true }));
@@ -79,7 +79,7 @@ if_rust_version! { == 1.37 {
 fn more_tests() {
 
     if_rust_version!(== nightly { let x = 2; } else if rust_version != nightly { let x = 3; });
-    assert_ne!(x, 1);
+    assert!(x != 1);
 
     if_rust_version!(> 1.31 { fn a() -> u32 { 1 } });
     if_rust_version!(<= 1.31 { fn a() -> u32 { 1 } });
@@ -112,6 +112,8 @@ fn item_expr() {
     }}}, 11);
 }
 
+#[cfg(not(test_no_submacro))]
+mod xx {
 
 if_rust_version! { < 1.31 {
     macro_rules! const_fn {
@@ -126,7 +128,7 @@ if_rust_version! { < 1.31 {
         };
     }
 } else {
-    macro_rules! const_fn { ($fn:item) => { $fn } }
+    macro_rules! const_fn { ($f:item) => { $f } }
 }}
 
 const_fn!{
@@ -138,4 +140,6 @@ const_fn!{
 #[test]
 fn test_const_fn() {
     assert_eq!(foo_const(44), 46);
+}
+
 }
