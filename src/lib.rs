@@ -35,7 +35,9 @@ assert_eq!(xx, 32);
 # }
 ```
 */
-#![cfg_attr(not(test_no_submacro), doc = r#"
+#![cfg_attr(
+    not(test_no_submacro),
+    doc = r#"
 
 The macro can be used to declare items or expression.
 
@@ -67,7 +69,8 @@ const_fn!{
 }
 # }
 ```
-"#)]
+"#
+)]
 /*!
 
 # Minimum Rust version
@@ -92,5 +95,3 @@ feature flag.
 #![no_std]
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
-
-

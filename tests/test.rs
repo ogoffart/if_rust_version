@@ -51,7 +51,6 @@ fn test_uninit() {
     assert_eq!(b, true);
 }
 
-
 if_rust_version! { == 1.37 {
     #[test]
     fn test_37() {
@@ -77,7 +76,6 @@ if_rust_version! { == 1.37 {
 
 #[test]
 fn more_tests() {
-
     if_rust_version!(== nightly { let x = 2; } else if rust_version != nightly { let x = 3; });
     assert!(x != 1);
 
@@ -97,49 +95,53 @@ fn more_tests() {
     if_rust_version!(== 1.28 { fn e() -> u32 { 1 } });
     if_rust_version!(> 1.28 { fn e() -> u32 { 1 } });
 
-    assert_eq!(a()+b()+c()+d()+e(), 5);
+    assert_eq!(a() + b() + c() + d() + e(), 5);
 }
-
 
 #[test]
 fn item_expr() {
-    assert_eq!({ if_rust_version! { > 1.2 {
-        fn foo_1() -> u32 { 11 }
-        foo_1()
-    } else {
-        fn foo_2() -> u32 { 11 }
-        foo_2()
-    }}}, 11);
+    assert_eq!(
+        {
+            if_rust_version! { > 1.2 {
+                fn foo_1() -> u32 { 11 }
+                foo_1()
+            } else {
+                fn foo_2() -> u32 { 11 }
+                foo_2()
+            }}
+        },
+        11
+    );
 }
 
 #[cfg(not(test_no_submacro))]
 mod xx {
 
-if_rust_version! { < 1.31 {
-    macro_rules! const_fn {
-        ($(#[$m:meta])* const fn $($rest:tt)*) => {
-            $(#[$m])* fn $($rest)*
-        };
-        ($(#[$m:meta])* pub const fn $($rest:tt)*) => {
-            $(#[$m])*
-            ///
-            /// This function is a const fn from rust 1.33
-            pub fn $($rest)*
-        };
+    if_rust_version! { < 1.31 {
+        macro_rules! const_fn {
+            ($(#[$m:meta])* const fn $($rest:tt)*) => {
+                $(#[$m])* fn $($rest)*
+            };
+            ($(#[$m:meta])* pub const fn $($rest:tt)*) => {
+                $(#[$m])*
+                ///
+                /// This function is a const fn from rust 1.33
+                pub fn $($rest)*
+            };
+        }
+    } else {
+        macro_rules! const_fn { ($f:item) => { $f } }
+    }}
+
+    const_fn! {
+        /// Function which is constant for some version of the compiler
+        #[inline]
+        pub const fn foo_const(x : u32) -> u32 { x + 2 }
     }
-} else {
-    macro_rules! const_fn { ($f:item) => { $f } }
-}}
 
-const_fn!{
-    /// Function which is constant for some version of the compiler
-    #[inline]
-    pub const fn foo_const(x : u32) -> u32 { x + 2 }
-}
-
-#[test]
-fn test_const_fn() {
-    assert_eq!(foo_const(44), 46);
-}
+    #[test]
+    fn test_const_fn() {
+        assert_eq!(foo_const(44), 46);
+    }
 
 }

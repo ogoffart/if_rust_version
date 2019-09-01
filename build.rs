@@ -3,8 +3,7 @@
 
 /// Parse the output of rustc --version and get the minor version and the channel
 fn parse_rustc_version(version_output: &[u8]) -> (u32, &str) {
-    let version_output =
-        ::std::str::from_utf8(version_output).expect("Cannot parse rustc version");
+    let version_output = ::std::str::from_utf8(version_output).expect("Cannot parse rustc version");
 
     let version_string = version_output
         .split_whitespace()
@@ -17,7 +16,7 @@ fn parse_rustc_version(version_output: &[u8]) -> (u32, &str) {
 
     let ver_minor: u32 = ver_iter
         .next()
-        .and_then(|x : &str| x.parse::<u32>().ok())
+        .and_then(|x: &str| x.parse::<u32>().ok())
         .expect("Cannot parse rustc version number");
 
     (ver_minor, dashsplit.next().unwrap_or(""))
@@ -47,7 +46,6 @@ fn parse_rustc_version_test() {
 }
 
 fn generate<T: ::std::io::Write>(mut f: T, ver_minor: u32, channel: &str) {
-
     let crate_ = if ver_minor >= 30 { "$crate::" } else { "" };
 
     writeln!(&mut f, "#[doc(hidden)] #[macro_export]").unwrap();
@@ -67,7 +65,10 @@ fn generate<T: ::std::io::Write>(mut f: T, ver_minor: u32, channel: &str) {
     writeln!(&mut f, "    (<= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{ > $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
     writeln!(&mut f, "}}").unwrap();
 
-    let doc = if ver_minor < 30 { "" } else { r#"/**
+    let doc = if ver_minor < 30 {
+        ""
+    } else {
+        r#"/**
 This macro can enable or disable code depending on the rust version with which the program is
 compiled.
 
@@ -126,7 +127,8 @@ println!("{}", { if_rust_version!{ < 1.22 { let x = 42; x} else { 43 } } } );
 println!("{}", if_rust_version!{ < 1.22 { {let x = 42; x} } else { 43 } }  );
 ```
 
-*/"#};
+*/"#
+    };
 
     writeln!(&mut f, r#"
 {doc}
@@ -137,7 +139,6 @@ macro_rules! if_rust_version {{
     ($op:tt $n:tt {{ $($if_:tt)* }} else {{ $($else_:tt)* }}) => {{ {crate}if_rust_version_impl!{{ $op $n {{$($if_)*}} {{$($else_)*}} }} }};
     ($op:tt $n:tt {{ $($if_:tt)* }} else if rust_version $($tail:tt)*) => {{ {crate}if_rust_version_impl!{{ $op $n {{$($if_)*}} {{ if_rust_version!{{$($tail)*}} }} }} }};
 }}"#, crate = crate_, doc = doc).unwrap();
-
 }
 
 fn main() {
