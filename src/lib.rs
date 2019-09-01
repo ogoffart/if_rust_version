@@ -1,4 +1,9 @@
 /*!
+
+[![Build Status](https://travis-ci.org/ogoffart/if_rust_version.svg?branch=master)](https://travis-ci.org/ogoffart/if_rust_version)
+[![Crates.io](https://img.shields.io/crates/v/if_rust_version.svg)](https://crates.io/crates/if_rust_version)
+[![docs](https://docs.rs/if_rust_version/badge.svg)](https://docs.rs/if_rust_version)
+
 This is a small crate that just export one macro that allow you to have code
 conditionally of the rust version.
 
@@ -64,6 +69,14 @@ const_fn!{
 ```
 "#)]
 /*!
+
+# Minimum Rust version
+
+The minimum rust version is rust 1.12, because previous versions were
+not expanding `tt` correcrtly in `macro_rules!`
+
+This crate has no dependencies, and is `#![no-std]`.
+
 # Comparison with other crates
 
 There are other crates that check the rust version number:
@@ -75,6 +88,8 @@ used by first writing a `build.rs` script to then add some
 feature flag.
 
 */
+
+#![no_std]
 
 include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 

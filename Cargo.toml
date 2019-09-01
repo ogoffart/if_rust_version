@@ -1,5 +1,13 @@
 [package]
 name = "if_rust_version"
+build = "build.rs"
 version = "0.1.0"
 authors = ["Olivier Goffart <ogoffart@woboq.com>"]
-build = "build.rs"
+description = "Macro to enable or disable code depending on the rust version"
+readme = "README.md"
+license = "MIT/Apache-2.0"
+keywords = ["version", "check"]
+categories = [ "memory-management" ]
+repository = "https://github.com/ogoffart/if_rust_version"
+documentation = "https://docs.rs/if_rust_version"
+

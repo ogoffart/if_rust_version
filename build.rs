@@ -47,6 +47,9 @@ fn parse_rustc_version_test() {
 }
 
 fn generate<T: ::std::io::Write>(mut f: T, ver_minor: u32, channel: &str) {
+
+    let crate_ = if ver_minor >= 30 { "$crate::" } else { "" };
+
     writeln!(&mut f, "#[doc(hidden)] #[macro_export]").unwrap();
     writeln!(&mut f, "macro_rules! if_rust_version_impl {{").unwrap();
     for ver in 0..(ver_minor + 1) {
@@ -58,20 +61,82 @@ fn generate<T: ::std::io::Write>(mut f: T, ver_minor: u32, channel: &str) {
         if channel == "nightly" { "if_" } else { "else_" }).unwrap();
     writeln!(&mut f, "    (== $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};").unwrap();
     writeln!(&mut f, "    (> 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};", ver_minor).unwrap();
-    writeln!(&mut f, "    (> $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ if_rust_version_impl!{{>= $n {{$($if_)*}} {{$($else_)*}} }} }};").unwrap();
-    writeln!(&mut f, "    (!= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ if_rust_version_impl!{{== $n {{$($else_)*}} {{$($if_)*}} }} }};").unwrap();
-    writeln!(&mut f, "    (< $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ if_rust_version_impl!{{ >= $n {{$($else_)*}} {{$($if_)*}} }} }};").unwrap();
-    writeln!(&mut f, "    (<= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ if_rust_version_impl!{{ > $n {{$($else_)*}} {{$($if_)*}} }} }};").unwrap();
+    writeln!(&mut f, "    (> $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{>= $n {{$($if_)*}} {{$($else_)*}} }} }};", crate_).unwrap();
+    writeln!(&mut f, "    (!= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{== $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
+    writeln!(&mut f, "    (< $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{ >= $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
+    writeln!(&mut f, "    (<= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{ > $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
     writeln!(&mut f, "}}").unwrap();
 
+    let doc = if ver_minor < 30 { "" } else { r#"/**
+This macro can enable or disable code depending on the rust version with which the program is
+compiled.
+
+The syntax is this:
+```text
+(if rust_version)? <operator> <version> { <code> } (else if rust_version <operator> <version> { <code> })* (else { <code> })?
+```
+
+So first a block for
+
+The operator is one of `==`, `!=`, `>=`, `<=`, `<` or `>`. The version is either `nightly` or a
+version number in the form `1.x`.
+
+**Important:** The version number can only have one period, and start with `1.`. So for example
+simply `1.36`, **but NOT** `1.36.0` or `0.42`
+
+The macro will expand to the code corresponding to the right condition. (Or nothing if no
+condition match).
+
+Examples:
+
+```rust
+# use if_rust_version::if_rust_version;
+if_rust_version!{ == nightly {
+    fn foo() { /* implementation on nightly */ }
+} else if rust_version >= 1.33 {
+    fn foo() { /* implementation on rust 1.33 or later */ }
+} else {
+    fn foo() { /* implementation on rust 1.33 on old rust */ }
+}}
+```
+
+```rust
+# use if_rust_version::if_rust_version;
+if_rust_version!{ >= 1.36 { use std::mem::MaybeUninit; }}
+// ...
+if_rust_version!{ < 1.36 {
+    let mut foo: u32 = unsafe { ::std::mem::uninitialized() };
+} else {
+    let mut foo: u32 = unsafe { ::std::mem::MaybeUninit::uninit().assume_init() };
+}}
+```
+
+Note that in case this is used as an expression, no blocks will be added.
+
+```error
+// Error
+println!("{}", if_rust_version!{ < 1.22 { let x = 42; x} else { 43 } } );
+```
+
+```rust
+# use if_rust_version::if_rust_version;
+// ok
+println!("{}", { if_rust_version!{ < 1.22 { let x = 42; x} else { 43 } } } );
+// Also ok
+println!("{}", if_rust_version!{ < 1.22 { {let x = 42; x} } else { 43 } }  );
+```
+
+*/"#};
+
     writeln!(&mut f, r#"
+{doc}
 #[macro_export]
 macro_rules! if_rust_version {{
     (if rust_version $($tail:tt)*) => {{ if_rust_version!{{ $($tail)* }} }};
     ($op:tt $n:tt {{ $($if_:tt)* }}) => {{ {crate}if_rust_version_impl!{{ $op $n {{$($if_)*}} {{}}}} }};
     ($op:tt $n:tt {{ $($if_:tt)* }} else {{ $($else_:tt)* }}) => {{ {crate}if_rust_version_impl!{{ $op $n {{$($if_)*}} {{$($else_)*}} }} }};
     ($op:tt $n:tt {{ $($if_:tt)* }} else if rust_version $($tail:tt)*) => {{ {crate}if_rust_version_impl!{{ $op $n {{$($if_)*}} {{ if_rust_version!{{$($tail)*}} }} }} }};
-}}"#, crate = if ver_minor >= 30 { "$crate::" } else { "" } ).unwrap();
+}}"#, crate = crate_, doc = doc).unwrap();
 
 }
 
