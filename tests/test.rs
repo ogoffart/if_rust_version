@@ -146,17 +146,11 @@ mod xx {
 
 }
 
+
 #[test]
 fn new_syntax() {
     let x = if_rust_version!(>= 1.26 { 1000u128 } else { 1000 });
     assert_eq!(x, 1000);
-
-    if_rust_version! { >= 1.30 {
-       let r#x = 15;
-       assert_eq!(x, 15);
-    } else {
-       let x = 15;
-       assert_eq!(x, 15);
-    }
-    }
+    if_rust_version! { < 1.999 { let x = 1010; } else { let x = 1010u543; }};
+    assert_eq!(x, 1010);
 }
