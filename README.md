@@ -68,12 +68,22 @@ This crate has no dependencies, and is `#![no-std]`.
 ## Comparison with other crates
 
 There are other crates that check the rust version number:
-[version_check](https://crates.io/crates/version_check) and
-[rustc_version](https://crates.io/crates/rustc_version).
 
-The main difference is that these crates are meant to to be
-used by first writing a `build.rs` script to then add some
+The main difference with
+[version_check](https://crates.io/crates/version_check) and
+[rustc_version](https://crates.io/crates/rustc_version) is that these crates
+are meant to to be used by first writing a `build.rs` script to then add some
 feature flag.
+
+[rustversion](https://github.com/dtolnay/rustversion) is a attribute macro,
+this has the disadvantage not to be able to be used for feature which add
+new grammar to the language (example: `?` or `10u128` or `impl Trait`).
+Also attribute macros were only stabilized recently, and do not support
+expanding to expressions yet. Not to mention the need to use heavy dependencies
+such as `syn` to develop procedural macro.
+
+There is also a proposed [RFC 2523](https://github.com/rust-lang/rfcs/pull/2523)
+which suggest allowing to query the rust version via the `#[cfg(...)]` attributes.
 
 ## Licenses:
 
