@@ -75,7 +75,7 @@ The main difference with
 are meant to to be used by first writing a `build.rs` script to then add some
 feature flag.
 
-[rustversion](https://github.com/dtolnay/rustversion) is a attribute macro,
+[rustversion](https://crates.io/crates/rustversion) is a attribute macro,
 this has the disadvantage not to be able to be used for feature which add
 new grammar to the language (example: `?` or `10u128` or `impl Trait`).
 Also attribute macros were only stabilized recently, and do not support
