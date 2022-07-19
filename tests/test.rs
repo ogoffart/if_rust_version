@@ -143,9 +143,7 @@ mod xx {
     fn test_const_fn() {
         assert_eq!(foo_const(44), 46);
     }
-
 }
-
 
 #[test]
 fn new_syntax() {

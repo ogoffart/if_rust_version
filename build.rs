@@ -51,14 +51,41 @@ fn generate<T: ::std::io::Write>(mut f: T, ver_minor: u32, channel: &str) {
     writeln!(&mut f, "#[doc(hidden)] #[macro_export]").unwrap();
     writeln!(&mut f, "macro_rules! if_rust_version_impl {{").unwrap();
     for ver in 0..(ver_minor + 1) {
-        writeln!(&mut f, "    (>= 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($if_)* }};", ver).unwrap();
+        writeln!(
+            &mut f,
+            "    (>= 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($if_)* }};",
+            ver
+        )
+        .unwrap();
     }
-    writeln!(&mut f, "    (>= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }} ) => {{ $($else_)* }};").unwrap();
-    writeln!(&mut f, "    (== 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($if_)* }};", ver_minor).unwrap();
-    writeln!(&mut f, "    (== nightly {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $(${})* }};",
-        if channel == "nightly" { "if_" } else { "else_" }).unwrap();
-    writeln!(&mut f, "    (== $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};").unwrap();
-    writeln!(&mut f, "    (> 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};", ver_minor).unwrap();
+    writeln!(
+        &mut f,
+        "    (>= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }} ) => {{ $($else_)* }};"
+    )
+    .unwrap();
+    writeln!(
+        &mut f,
+        "    (== 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($if_)* }};",
+        ver_minor
+    )
+    .unwrap();
+    writeln!(
+        &mut f,
+        "    (== nightly {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $(${})* }};",
+        if channel == "nightly" { "if_" } else { "else_" }
+    )
+    .unwrap();
+    writeln!(
+        &mut f,
+        "    (== $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};"
+    )
+    .unwrap();
+    writeln!(
+        &mut f,
+        "    (> 1.{} {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ $($else_)* }};",
+        ver_minor
+    )
+    .unwrap();
     writeln!(&mut f, "    (> $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{>= $n {{$($if_)*}} {{$($else_)*}} }} }};", crate_).unwrap();
     writeln!(&mut f, "    (!= $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{== $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
     writeln!(&mut f, "    (< $n:tt {{ $($if_:tt)* }} {{ $($else_:tt)* }}) => {{ {}if_rust_version_impl!{{ >= $n {{$($else_)*}} {{$($if_)*}} }} }};", crate_).unwrap();
